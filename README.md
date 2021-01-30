@@ -10,7 +10,7 @@ Run 'pip install -r requirements.txt' in project root directory.
 # Run
 If your API needs authorization fill config.py with appropriate values.
 
-python api_smoke_test\smoke_test.py name_of_a_spec_file [--auth] [--localhost].
+python api-smoke-test\smoke_test.py name_of_a_spec_file [--auth] [--localhost].
 
 --auth smoke tests uses authorization to make API requests.
 API for which this smoke test was written uses authorization so the smoke test isn't 
