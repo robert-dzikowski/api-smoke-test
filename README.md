@@ -1,11 +1,10 @@
 # Introduction 
-This repo contains Smoke Test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI).
+This repo contains smoke test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI).
   
 # Getting Started
 Install Python 3.7.
 
 To install packages globally (for all users),
-
 run 'pip install -r requirements.txt' in project root directory.
 
 # Run
