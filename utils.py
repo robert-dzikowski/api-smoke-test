@@ -1,7 +1,7 @@
 import json
 import requests
 
-TIMEOUT = 3.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT = 5.0  # Tells requests library to stop waiting for a response after a given number of seconds
 
 
 def create_resource(endpoint, headers, payload):

@@ -6,7 +6,8 @@ import sys
 sys.path.append('api_smoke_test')
 import config
 
-TIMEOUT = 3.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT = 4.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT_POST = 9.0
 
 
 def get_authorization_token(local=False):
@@ -63,7 +64,7 @@ def create_protected_resource(endpoint, token, payload=None):
 def _create_protected_resource(endpoint, client_id, token, body):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.post(url=endpoint, json=body, timeout=TIMEOUT)
+        resp = client.post(url=endpoint, json=body, timeout=TIMEOUT_POST)
         return resp
     except requests.exceptions.ReadTimeout:
         resp = requests.models.Response()
@@ -81,7 +82,7 @@ def put_protected_resource(endpoint, token, payload=None):
 def _put_protected_resource(endpoint, client_id, token, body):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT)
+        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT_POST)
         return resp
     except requests.exceptions.ReadTimeout:
         resp = requests.models.Response()
