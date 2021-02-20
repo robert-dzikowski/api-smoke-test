@@ -11,7 +11,7 @@ LOCAL_ARG = '--localhost'
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: python smoke_test.py name_of_the_spec_file [' + AUTH_ARG + '] [' + LOCAL_ARG + ']')
+        print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file [' + AUTH_ARG + '] [' + LOCAL_ARG + ']')
         sys.exit(1)
 
     spec_file = sys.argv[1]

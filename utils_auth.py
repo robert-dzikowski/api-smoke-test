@@ -2,12 +2,16 @@ import os
 import requests
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
-import sys
-sys.path.append('api_smoke_test')
-import config
+try:
+    import api_smoke_test.config as config
+except ModuleNotFoundError:
+    import sys
+    sys.path.append('api_smoke_test')
+    import config
 
-TIMEOUT = 4.0  # Tells requests library to stop waiting for a response after a given number of seconds
-TIMEOUT_POST = 9.0
+
+TIMEOUT = 2.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT_POST = 15.0
 
 
 def get_authorization_token(local=False):
@@ -48,10 +52,9 @@ def _get_protected_resource(endpoint, client_id, token):
         client = OAuth2Session(client_id, token=token)
         resp = client.get(endpoint, timeout=TIMEOUT)
         return resp
-    except requests.exceptions.ReadTimeout:
-        resp = requests.models.Response()
-        resp.status_code = 408
-        return resp
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        error_resp = _set_408_in_the_response()
+        return error_resp
 
 
 def create_protected_resource(endpoint, token, payload=None):
@@ -66,10 +69,9 @@ def _create_protected_resource(endpoint, client_id, token, body):
         client = OAuth2Session(client_id, token=token)
         resp = client.post(url=endpoint, json=body, timeout=TIMEOUT_POST)
         return resp
-    except requests.exceptions.ReadTimeout:
-        resp = requests.models.Response()
-        resp.status_code = 408
-        return resp
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        error_resp = _set_408_in_the_response()
+        return error_resp
 
 
 def put_protected_resource(endpoint, token, payload=None):
@@ -82,12 +84,26 @@ def put_protected_resource(endpoint, token, payload=None):
 def _put_protected_resource(endpoint, client_id, token, body):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT_POST)
+        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT)
         return resp
-    except requests.exceptions.ReadTimeout:
-        resp = requests.models.Response()
-        resp.status_code = 408
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        error_resp = _set_408_in_the_response()
+        return error_resp
+
+
+def patch_protected_resource(endpoint, token):
+    resp = _patch_protected_resource(endpoint, config.CLIENT_ID, token)
+    return resp
+
+
+def _patch_protected_resource(endpoint, client_id, token):
+    try:
+        client = OAuth2Session(client_id, token=token)
+        resp = client.patch(url=endpoint, timeout=TIMEOUT_POST)
         return resp
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        error_resp = _set_408_in_the_response()
+        return error_resp
 
 
 def delete_protected_resource(endpoint, token):
@@ -95,12 +111,17 @@ def delete_protected_resource(endpoint, token):
         client = OAuth2Session(config.CLIENT_ID, token=token)
         resp = client.delete(endpoint, timeout=TIMEOUT)
         return resp
-    except requests.exceptions.ReadTimeout:
-        resp = requests.models.Response()
-        resp.status_code = 408
-        return resp
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        error_resp = _set_408_in_the_response()
+        return error_resp
 
 
 def set_env_for_local_oauthlib():
     # This has to be set if you your API uses HTTP instead of HTTPS
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+
+def _set_408_in_the_response():
+    resp = requests.models.Response()
+    resp.status_code = 408
+    return resp
