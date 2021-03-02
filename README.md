@@ -9,6 +9,8 @@ run 'pip install -r requirements.txt' in project root directory.
 
 # Run
 python api-smoke-test\smoke_test.py name_of_a_spec_file [--auth] [--localhost]
+or
+python api-smoke-test\smoke_test.py url_of_a_spec_file [--auth] [--localhost]
 
 If your API needs authorization fill config.py with appropriate values.
 
