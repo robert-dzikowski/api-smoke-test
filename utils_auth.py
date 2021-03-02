@@ -10,8 +10,8 @@ except ModuleNotFoundError:
     import config
 
 
-TIMEOUT = 2.0  # Tells requests library to stop waiting for a response after a given number of seconds
-TIMEOUT_POST = 15.0
+TIMEOUT = 4.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT_POST = 10.0
 
 
 def get_authorization_token(local=False):
@@ -84,7 +84,7 @@ def put_protected_resource(endpoint, token, payload=None):
 def _put_protected_resource(endpoint, client_id, token, body):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT)
+        resp = client.put(url=endpoint, json=body, timeout=TIMEOUT_POST)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
         error_resp = _set_408_in_the_response()
@@ -109,7 +109,7 @@ def _patch_protected_resource(endpoint, client_id, token):
 def delete_protected_resource(endpoint, token):
     try:
         client = OAuth2Session(config.CLIENT_ID, token=token)
-        resp = client.delete(endpoint, timeout=TIMEOUT)
+        resp = client.delete(endpoint, timeout=TIMEOUT_POST)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
         error_resp = _set_408_in_the_response()

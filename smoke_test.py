@@ -1,8 +1,11 @@
+import datetime
 import re
 import sys
 import yaml
+import utils
 import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
+from my_print import MyPrint
 from my_exceptions import TestFail
 
 AUTH_ARG = '--auth'
@@ -15,7 +18,11 @@ def main():
         sys.exit(1)
 
     spec_file = sys.argv[1]
-    spec = parse_spec_file(spec_file)
+    if spec_file.startswith('http'):
+        content = utils.get_resource_content_string(spec_file)
+        spec = yaml.safe_load(content)
+    else:
+        spec = parse_spec_file(spec_file)
     base_api_url = spec['servers'][0]['url']
     paths_dict = spec['paths']
 
@@ -24,8 +31,9 @@ def main():
     print('')
 
     endpoints_list = return_list_of_parameterless_get_methods(paths_dict)
+    endpoints_with_params = return_list_of_get_methods_with_parameters(paths_dict)
 
-    if len(endpoints_list) == 0:
+    if len(endpoints_list) == 0 and len(endpoints_with_params) == 0:
         raise TestFail('Spec file ' + spec_file + ' does not contain any GET methods.')
 
     if authorization_is_necessary():
@@ -38,7 +46,6 @@ def main():
     print('Testing GET methods')
     maker.make_get_requests(endpoints_list)
 
-    endpoints_with_params = return_list_of_get_methods_with_parameters(paths_dict)
     if len(endpoints_with_params) > 0:
         call_get_methods_with_parameters(endpoints_with_params, maker)
 
@@ -67,7 +74,11 @@ def main():
         print('Testing DELETE methods')
         maker.make_delete_requests_with_parameters(new_list)
 
-    print_test_results(maker)
+    print_test_results(maker, spec['info']['title'])
+
+    # Exit with error code is needed by Azure to show test as failed
+    if len(maker.failed_requests_list) > 0:
+        sys.exit(1)
 # main()
 
 
@@ -77,7 +88,8 @@ def main():
 def parse_spec_file(spec_file):
     # Load OpenAPI spec file and read yaml or json data
     with open(spec_file) as f:
-        spec = yaml.safe_load(f.read())
+        content = f.read()
+        spec = yaml.safe_load(content)
     return spec
 
 
@@ -156,16 +168,35 @@ def call_get_methods_with_parameters(endpoints_with_params, maker):
     maker.make_get_requests_with_parameters(new_list)
 
 
-def print_test_results(maker):
+def print_test_results(maker, api_title):
+    mp = MyPrint()
     print('')
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('Date: ' + date)
+    print(api_title)
+    timestamp = str(datetime.datetime.now()).replace(' ', 'T')
+    header3 = '<system-out><![CDATA['
+
     if len(maker.failed_requests_list) > 0:
-        print('FAILED REQUESTS:')
+        header = '<testsuite errors="1" failures="0" skipped="0" tests="1" timestamp="' + timestamp + '">'
+        header2 = '<testcase status="failed" name="' + api_title + '">'
+        header21 = '<error message="Test failed"></error>'
+        mp.append_result_str(header + header2 + header21 + header3)
+        mp.my_print('FAILED REQUESTS:')
         for r in maker.failed_requests_list:
-            print(r)
-        print('')
-        print('*** TEST FAIL ***')
+            mp.my_print(r)
+        mp.my_print('')
+        mp.my_print('*** TEST FAIL ***')
     else:
-        print('*** Test Pass ***')
+        header = '<testsuite errors="0" failures="0" skipped="0" tests="1" timestamp="' + timestamp + '">'
+        header2 = '<testcase status="passed" name="' + api_title + '">'
+        mp.append_result_str(header + header2 + header3)
+        mp.my_print('*** Test Pass ***')
+
+    end = ']]></system-out></testcase></testsuite>'
+    mp.append_result_str(end)
+    filename = api_title.replace(" ", "_") + '_test_results.xml'
+    mp.save_result_str_to_file(filename)
     print('')
     print('')
     print('')
