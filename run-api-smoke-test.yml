@@ -1,0 +1,25 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.7'
+    addToPath: true
+    architecture: 'x64'
+    
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements-smoke-test.txt
+  displayName: 'Install dependencies'
+
+- script: |
+    python api_smoke_test/smoke_test.py url_of_yout+spec_file --auth
+  displayName: 'Run API smoke tests'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'reports/*.xml'
+    testRunTitle: 'Test results for API smoke tests'
