@@ -14,7 +14,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    python api_smoke_test/smoke_test.py url_of_yout+spec_file --auth
+    python api_smoke_test/smoke_test.py url_of_your_spec_file --auth
   displayName: 'Run API smoke tests'
 
 - task: PublishTestResults@2
