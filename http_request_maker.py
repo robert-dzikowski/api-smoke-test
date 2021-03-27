@@ -31,10 +31,10 @@ class HTTPRequestMaker:
         self._make_requests(requests_with_parameters_list, [200, 404], HttpMethods.GET)
 
     def make_post_requests(self, request_list):
-        self._make_requests(request_list, [400], HttpMethods.POST)
+        self._make_requests(request_list, [200, 400], HttpMethods.POST)
 
     def make_post_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [400, 404], HttpMethods.POST)
+        self._make_requests(requests_with_parameters_list, [200, 400, 404], HttpMethods.POST)
 
     def make_put_requests_with_parameters(self, requests_with_parameters_list):
         self._make_requests(requests_with_parameters_list, [204, 400, 404], HttpMethods.PUT)

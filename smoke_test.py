@@ -2,11 +2,14 @@ import datetime
 import re
 import sys
 import yaml
+import os
+sys.path.insert(0, os.getcwd())
 import utils
 import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
 from my_print import MyPrint
 from my_exceptions import TestFail
+
 
 AUTH_ARG = '--auth'
 LOCAL_ARG = '--localhost'
