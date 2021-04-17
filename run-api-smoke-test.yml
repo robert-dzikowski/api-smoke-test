@@ -4,7 +4,7 @@ pool:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.7'
+    versionSpec: '3.9'
     addToPath: true
     architecture: 'x64'
     
@@ -14,7 +14,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    python api_smoke_test/smoke_test.py url_of_your_spec_file --auth
+    python api_smoke_test/smoke_test.py url_of_your_spec_file --auth --request-param=$(req-param)
   displayName: 'Run API smoke tests'
 
 - task: PublishTestResults@2

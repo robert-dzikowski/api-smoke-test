@@ -1,9 +1,9 @@
+import os
+import sys
+sys.path.insert(0, os.getcwd())
 import datetime
 import re
-import sys
 import yaml
-import os
-sys.path.insert(0, os.getcwd())
 import utils
 import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
@@ -11,13 +11,15 @@ from my_print import MyPrint
 from my_exceptions import TestFail
 
 
-AUTH_ARG = '--auth'
-LOCAL_ARG = '--localhost'
+AUTH_ARG          = '--auth'
+LOCAL_ARG         = '--localhost'
+REQUEST_PARAM_ARG = '--request-param='
 
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file [' + AUTH_ARG + '] [' + LOCAL_ARG + ']')
+        print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file '
+              '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG + ']')
         sys.exit(1)
 
     spec_file = sys.argv[1]
@@ -49,8 +51,10 @@ def main():
     print('Testing GET methods')
     maker.make_get_requests(endpoints_list)
 
+    req_param = get_request_param_arg()
+
     if len(endpoints_with_params) > 0:
-        call_get_methods_with_parameters(endpoints_with_params, maker)
+        call_get_methods_with_parameters(endpoints_with_params, maker, req_param)
 
     endpoints_list = return_list_of_parameterless_post_methods(paths_dict)
     if len(endpoints_list) > 0:
@@ -60,12 +64,12 @@ def main():
 
     endpoints_with_params = return_list_of_post_methods_with_parameters(paths_dict)
     if len(endpoints_with_params) > 0:
-        new_list = replace_parameters_with(endpoints_with_params, '1')
+        new_list = replace_parameters_with(endpoints_with_params, req_param)
         maker.make_post_requests_with_parameters(new_list)
 
     endpoints_with_params = return_list_of_put_methods_with_parameters(paths_dict)
     if len(endpoints_with_params) > 0:
-        new_list = replace_parameters_with(endpoints_with_params, '1')
+        new_list = replace_parameters_with(endpoints_with_params, req_param)
         print('')
         print('Testing PUT methods')
         maker.make_put_requests_with_parameters(new_list)
@@ -102,6 +106,14 @@ def authorization_is_necessary():
         if arg == AUTH_ARG:
             result = True
     return result
+
+
+def get_request_param_arg():
+    tenant_id = '1'
+    for arg in sys.argv:
+        if arg.startswith(REQUEST_PARAM_ARG):
+            tenant_id = arg.split('=')[1]
+    return tenant_id
 
 
 def get_auth_token():
@@ -162,8 +174,8 @@ def replace_parameters_with(endpoints_list, replacement):
     return new_list
 
 
-def call_get_methods_with_parameters(endpoints_with_params, maker):
-    new_list = replace_parameters_with(endpoints_with_params, '1')
+def call_get_methods_with_parameters(endpoints_with_params, maker, param):
+    new_list = replace_parameters_with(endpoints_with_params, param)
     maker.make_get_requests_with_parameters(new_list)
     print('')
     print('Testing with non existing values of parameters:')

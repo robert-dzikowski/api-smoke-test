@@ -25,7 +25,7 @@ def get_resource_data(endpoint):
 def get_resource_content_string(endpoint):
     resp = get_resource(endpoint)
     check_response_status_code(resp.status_code, 200,
-                               "get_resource_content_string() returned status code " + str(resp.status_code))
+                               "get_resource_content_string() returned Status Code " + str(resp.status_code))
     content = bytes.decode(resp.content)
     return content
 

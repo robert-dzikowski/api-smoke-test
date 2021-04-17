@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 from oauthlib.oauth2 import LegacyApplicationClient
@@ -19,7 +20,6 @@ def get_authorization_token(local=False):
     # web_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6ImF0K2p3dCJ9.eyJuYmYiOjE2MTQ5NzcwMjQsImV4cCI6MTYxNDk4MDYyNCwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5tYXBsZWxlYWYuYW5vdmEuZGV2IiwiYXVkIjpbInBlcm1pc3Npb25zLWFwaSIsInRlbmFudG1hbmFnZXItYXBpIiwidHJhbnNmb3JtZmlsZWltcG9ydGVyLWFwaSIsImRldmljZXMtYXBpIiwiYXNzZXRzLWFwaSJdLCJjbGllbnRfaWQiOiJtYXBsZS1sZWFmLXdlYi1hcHAiLCJzdWIiOiI4YjI3YjA5ZS0wOTI3LTQ3OWQtODFjZS0yZWVkMmQxMmVhNzYiLCJhdXRoX3RpbWUiOjE2MTQ5Njg1NjEsImlkcCI6ImxvY2FsIiwicm9sZSI6WyJEaWdpdGFsaXphdGlvbi5TdXBwb3J0IiwiRGlzdHJpYnV0b3IuVXNlciIsIlRlbGVtZXRyeU9wZXJhdGlvbnMuU3VwcG9ydCIsIlRlbGVtZXRyeVNlcnZpY2UtTWFpbnRlbmFuY2UuU3VwcG9ydCIsIlRyYW5zZm9ybS5Db25zdWx0YW50Il0sInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJwZXJtaXNzaW9ucy1hcGkiLCJ0ZW5hbnRtYW5hZ2VyLWFwaSIsInRyYW5zZm9ybWZpbGVpbXBvcnRlci1hcGkiLCJkZXZpY2VzLWFwaSIsImFzc2V0cy1hcGkiLCJvZmZsaW5lX2FjY2VzcyJdLCJhbXIiOlsicHdkIl19.BI_hNro9U-fyMxQpmO79TVTqDKq3FR_GJf5_se3fqZOl8kcBSEcGFzWbEwKj9Z9dGB0b7rAK3-ctjNB6Re5ETLYIMMNKtp13LpECDoyAkAW_qXyVhDFXc_lRXytyfW0nyH5dgUBNwqBbJE_rGvTUc6gQG2gfDIZ6SIpxAgV9cEe-pRyMylu18JvK_I0kkEnC8sB667VuPsBofH61R69RnVCggFz9icj6iVFXxXFl0CoUQnN39bohvuUss_vit7NCG-FHH_CntZ4VMf_tx3qvo0Na4bBESFnw9iUhFQW4tfHID5AznRBRn14Sq6IEJlKgUL3JVqcHI4nRN3MXpc1O5w'
     # token = {'access_token': web_token, 'expires_in': 3600, 'token_type': 'Bearer', 'scope': ['assets-api', 'devices-api', 'digitalization-api', 'openid', 'permissions-api', 'profile', 'roles', 'tenantmanager-api', 'transformfileimporter-api', 'usermanagement-api']}  # , 'expires_at': 1614950149.8913505}
     token = get_auth_token_of_user(config.API_USER, password, local)
-
     return token
 
 
@@ -30,9 +30,14 @@ def get_auth_token_of_user(email, password, local=False):
     else:
         TOKEN_URL = config.token_staging
     oauth = OAuth2Session(client=LegacyApplicationClient(client_id=config.CLIENT_ID))
-    token = oauth.fetch_token(
-        token_url=TOKEN_URL, username=email, password=password,
-        client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)
+    try:
+        token = oauth.fetch_token(
+            token_url=TOKEN_URL, username=email, password=password,
+            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)
+    except Exception as e:
+        print('Fetching token caused exception, type: ' + str(type(e)))
+        print(str(e))
+        raise
     return token
 
 
@@ -41,13 +46,13 @@ def get_protected_resource(endpoint, token):
     return resp
 
 
-def _get_protected_resource(endpoint, client_id, token):
+def _get_protected_resource(endpoint, client_id, token, get_timeout=config.TIMEOUT):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.get(endpoint, timeout=config.TIMEOUT)
+        resp = client.get(endpoint, timeout=get_timeout)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        error_resp = _set_408_in_the_response()
+        error_resp = _create_error_response(get_timeout)
         return error_resp
 
 
@@ -58,13 +63,13 @@ def create_protected_resource(endpoint, token, payload=None):
     return resp
 
 
-def _create_protected_resource(endpoint, client_id, token, body):
+def _create_protected_resource(endpoint, client_id, token, body, post_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.post(url=endpoint, json=body, timeout=config.TIMEOUT_POST)
+        resp = client.post(url=endpoint, json=body, timeout=post_timeout)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        error_resp = _set_408_in_the_response()
+        error_resp = _create_error_response(post_timeout)
         return error_resp
 
 
@@ -75,13 +80,13 @@ def put_protected_resource(endpoint, token, payload=None):
     return resp
 
 
-def _put_protected_resource(endpoint, client_id, token, body):
+def _put_protected_resource(endpoint, client_id, token, body, put_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.put(url=endpoint, json=body, timeout=config.TIMEOUT_POST)
+        resp = client.put(url=endpoint, json=body, timeout=put_timeout)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        error_resp = _set_408_in_the_response()
+        error_resp = _create_error_response(put_timeout)
         return error_resp
 
 
@@ -90,23 +95,23 @@ def patch_protected_resource(endpoint, token):
     return resp
 
 
-def _patch_protected_resource(endpoint, client_id, token):
+def _patch_protected_resource(endpoint, client_id, token, patch_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.patch(url=endpoint, timeout=config.TIMEOUT_POST)
+        resp = client.patch(url=endpoint, timeout=patch_timeout)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        error_resp = _set_408_in_the_response()
+        error_resp = _create_error_response(patch_timeout)
         return error_resp
 
 
-def delete_protected_resource(endpoint, token):
+def delete_protected_resource(endpoint, token, delete_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(config.CLIENT_ID, token=token)
-        resp = client.delete(endpoint, timeout=config.TIMEOUT_POST)
+        resp = client.delete(endpoint, timeout=delete_timeout)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        error_resp = _set_408_in_the_response()
+        error_resp = _create_error_response(delete_timeout)
         return error_resp
 
 
@@ -115,7 +120,18 @@ def set_env_for_local_oauthlib():
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
-def _set_408_in_the_response():
+def _create_error_response(timeout):
+    error_resp = _create_408_response()
+    error_resp = _set_elapsed_time_in_response(error_resp, timeout)
+    return error_resp
+
+
+def _create_408_response():
     resp = requests.models.Response()
     resp.status_code = 408
     return resp
+
+
+def _set_elapsed_time_in_response(response, timeout):
+    response.elapsed = datetime.timedelta(seconds=timeout)
+    return response

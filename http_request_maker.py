@@ -31,10 +31,10 @@ class HTTPRequestMaker:
         self._make_requests(requests_with_parameters_list, [200, 404], HttpMethods.GET)
 
     def make_post_requests(self, request_list):
-        self._make_requests(request_list, [200, 400], HttpMethods.POST)
+        self._make_requests(request_list, [200, 201, 204, 400], HttpMethods.POST)
 
     def make_post_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [200, 400, 404], HttpMethods.POST)
+        self._make_requests(requests_with_parameters_list, [200, 201, 204, 400, 404, 409], HttpMethods.POST)
 
     def make_put_requests_with_parameters(self, requests_with_parameters_list):
         self._make_requests(requests_with_parameters_list, [204, 400, 404], HttpMethods.PUT)
@@ -45,19 +45,24 @@ class HTTPRequestMaker:
     def _make_requests(self, request_list, correct_statuses, http_method):
         for end_point in request_list:
             if http_method == HttpMethods.GET:
-                print('Requesting GET ' + end_point)
-                status_code = self._send_get_request(end_point)
+                print('Requesting GET ' + end_point, end="")
+                response = self._send_get_request(end_point)
+                status_code = response.status_code
             elif http_method == HttpMethods.POST:
-                print('Requesting POST ' + end_point)
-                status_code = self._send_post_request(end_point)
+                print('Requesting POST ' + end_point, end="")
+                response = self._send_post_request(end_point)
+                status_code = response.status_code
             elif http_method == HttpMethods.PUT:
-                print('Requesting PUT ' + end_point)
-                status_code = self._send_put_request(end_point)
+                print('Requesting PUT ' + end_point, end="")
+                response = self._send_put_request(end_point)
+                status_code = response.status_code
             elif http_method == HttpMethods.DELETE:
-                print('Requesting DELETE ' + end_point)
-                status_code = self._send_delete_request(end_point)
+                print('Requesting DELETE ' + end_point, end="")
+                response = self._send_delete_request(end_point)
+                status_code = response.status_code
             else:
                 return
+            print(' Duration: ' + str(response.elapsed.total_seconds()))
 
             request_succeeded = (status_code in correct_statuses)
             if not request_succeeded:
@@ -71,7 +76,7 @@ class HTTPRequestMaker:
         else:
             response = ua.get_protected_resource(
                 endpoint=self._api_url + end_point, token=self._auth_token)
-        return response.status_code
+        return response
 
     def _send_post_request(self, end_point):
         if self._auth_token is None:
@@ -79,7 +84,7 @@ class HTTPRequestMaker:
         else:
             response = ua.create_protected_resource(
                 endpoint=self._api_url + end_point, token=self._auth_token)
-        return response.status_code
+        return response
 
     def _send_put_request(self, end_point):
         if self._auth_token is None:
@@ -87,7 +92,7 @@ class HTTPRequestMaker:
         else:
             response = ua.put_protected_resource(
                 endpoint=self._api_url + end_point, token=self._auth_token)
-        return response.status_code
+        return response
 
     def _send_delete_request(self, end_point):
         if self._auth_token is None:
@@ -95,4 +100,4 @@ class HTTPRequestMaker:
         else:
             response = ua.delete_protected_resource(
                 endpoint=self._api_url + end_point, token=self._auth_token)
-        return response.status_code
+        return response
