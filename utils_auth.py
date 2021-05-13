@@ -129,6 +129,7 @@ def _create_error_response(timeout):
 def _create_408_response():
     resp = requests.models.Response()
     resp.status_code = 408
+    resp._content = '{"errors":"requests.exceptions.Timeout"}'
     return resp
 
 
