@@ -10,5 +10,5 @@ API_USER_LOCAL_PASS =
 token_staging = 
 token_local = 
 
-TIMEOUT = 4.0  # Tells requests library to stop waiting for a response after a given number of seconds
-TIMEOUT_POST = 10.0
+TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after given number of seconds
+TIMEOUT_POST = 20.0
