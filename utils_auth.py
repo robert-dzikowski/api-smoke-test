@@ -5,33 +5,53 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 import api_smoke_test.config as config
 
+API_SCOPE = ['aggregations-api', 'assets-api', 'assets-forecast-api', 'assetreports-api',
+             'connectivity-api', 'consumer-mobile-api',
+             'devices-api', 'devicesbulkimport-api', 'devicesbulkprocessing-api',
+             'gounify-api',
+             'integrationsconfiguration-api',
+             'mobilemarketer-api',
+             'permissions-api',  'profile',
+             'tenantmanager-api', 'transformfileimporter-api',
+             'usermanagement-api']  # , 'openid']
 
-def get_authorization_token(local=False):
+
+def get_authorization_token(scope=None, local=False):
     """
     Returns authorization token of API_USER.
-    :param local: if True API runs on localhost and needs some parameters to be set
+    @param scope: scope of a token that will be fetched, default value is all APIs
+    @param local: if True API runs on localhost and needs some parameters to be set
     :return: dict
     """
+    if scope is None:
+        scope = API_SCOPE
+
     if local:
         password = config.API_USER_LOCAL_PASS
     else:
         password = config.API_USER_PASS
 
-    token = get_auth_token_of_user(config.API_USER, password, local)
+    token = get_auth_token_of_user(config.API_USER, password, token_scope=scope, local=local)
     return token
 
 
-def get_auth_token_of_user(email, password, local=False):
+def get_auth_token_of_user(email, password, token_scope=None, local=False):
+    if token_scope is None:
+        token_scope = API_SCOPE
+
     if local:
         set_env_for_local_oauthlib()
         TOKEN_URL = config.token_local
     else:
         TOKEN_URL = config.token_staging
-    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=config.CLIENT_ID))
+
+    my_client = LegacyApplicationClient(client_id=config.CLIENT_ID)
+    oauth = OAuth2Session(client=my_client)
     try:
         token = oauth.fetch_token(
             token_url=TOKEN_URL, username=email, password=password,
-            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)
+            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET,
+            scope=token_scope)  # ['permissions-api', 'tenantmanager-api'])
     except Exception as e:
         print('Fetching token caused exception, type: ' + str(type(e)))
         print(str(e))
@@ -39,15 +59,18 @@ def get_auth_token_of_user(email, password, local=False):
     return token
 
 
-def get_protected_resource(endpoint, token):
-    resp = _get_protected_resource(endpoint, config.CLIENT_ID, token)
+def get_protected_resource(endpoint, token, headers=None):
+    resp = _get_protected_resource(endpoint, config.CLIENT_ID, token, headers=headers)
     return resp
 
 
-def _get_protected_resource(endpoint, client_id, token, get_timeout=config.TIMEOUT):
+def _get_protected_resource(endpoint, client_id, token, get_timeout=config.TIMEOUT, headers=None):
     try:
         client = OAuth2Session(client_id, token=token)
-        resp = client.get(endpoint, timeout=get_timeout)
+        if headers is None:
+            resp = client.get(endpoint, timeout=get_timeout)
+        else:
+            resp = client.get(endpoint, timeout=get_timeout, headers=headers)
         return resp
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
         error_resp = _create_error_response(get_timeout)

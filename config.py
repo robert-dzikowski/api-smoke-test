@@ -1,4 +1,4 @@
-CLIENT_ID = 
+CLIENT_ID =
 CLIENT_SECRET = 
 API_USER = 
 API_USER_PASS = 
@@ -10,5 +10,8 @@ API_USER_LOCAL_PASS =
 token_staging = 
 token_local = 
 
-TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after given number of seconds
-TIMEOUT_POST = 20.0
+TIMEOUT = 20.0  # Tells requests library to stop waiting for a response after given number of seconds
+TIMEOUT_POST = 20.0  # Timeout for POST requests
+WARNING_TIMEOUT = 2.0
+WARNING_TIMEOUT_POST = 4.0
+WARNING_FAIL = False

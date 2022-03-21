@@ -9,17 +9,27 @@ import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
 from my_print import MyPrint
 from my_exceptions import TestFail
+import api_smoke_test.config as config
 
 
-AUTH_ARG          = '--auth'
-LOCAL_ARG         = '--localhost'
-REQUEST_PARAM_ARG = '--request-param='
+AUTH_ARG              = '--auth'
+LOCAL_ARG             = '--localhost'
+REQUEST_PARAM_ARG     = '--request-param='
+ONLY_GET_METHODS_ARG  = '--only-get'  # The smoke test will only test GET methods
+EU_REGION_ARG         = '--region-eu'
+
+HEADERS_EU = {
+    'accept': '*/*',
+    'Content-Type': 'application/json',
+    'x-geo': 'eu'
+}
 
 
 def main():
     if len(sys.argv) < 2:
         print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file '
-              '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG + ']')
+              '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG +
+              '] [' + ONLY_GET_METHODS_ARG + '] [' + EU_REGION_ARG + ']')
         sys.exit(1)
 
     spec_file = sys.argv[1]
@@ -46,7 +56,12 @@ def main():
     else:
         token = None
 
-    maker = HTTPRequestMaker(base_api_url, token)
+    if testing_eu_region():
+        headers = HEADERS_EU
+    else:
+        headers = None
+
+    maker = HTTPRequestMaker(base_api_url, token, headers)
 
     print('Testing GET methods')
     maker.make_get_requests(endpoints_list)
@@ -56,35 +71,40 @@ def main():
     if len(endpoints_with_params) > 0:
         call_get_methods_with_parameters(endpoints_with_params, maker, req_param)
 
-    endpoints_list = return_list_of_parameterless_post_methods(paths_dict)
-    if len(endpoints_list) > 0:
-        print('')
-        print('Testing POST methods')
-        maker.make_post_requests(endpoints_list)
+    if not only_make_get_requests():
+        endpoints_list = return_list_of_parameterless_post_methods(paths_dict)
+        if len(endpoints_list) > 0:
+            print('')
+            print('Testing POST methods')
+            maker.make_post_requests(endpoints_list)
 
-    endpoints_with_params = return_list_of_post_methods_with_parameters(paths_dict)
-    if len(endpoints_with_params) > 0:
-        new_list = replace_parameters_with(endpoints_with_params, req_param)
-        maker.make_post_requests_with_parameters(new_list)
+        endpoints_with_params = return_list_of_post_methods_with_parameters(paths_dict)
+        if len(endpoints_with_params) > 0:
+            new_list = replace_parameters_with(endpoints_with_params, req_param)
+            maker.make_post_requests_with_parameters(new_list)
 
-    endpoints_with_params = return_list_of_put_methods_with_parameters(paths_dict)
-    if len(endpoints_with_params) > 0:
-        new_list = replace_parameters_with(endpoints_with_params, req_param)
-        print('')
-        print('Testing PUT methods')
-        maker.make_put_requests_with_parameters(new_list)
+        endpoints_with_params = return_list_of_put_methods_with_parameters(paths_dict)
+        if len(endpoints_with_params) > 0:
+            new_list = replace_parameters_with(endpoints_with_params, req_param)
+            print('')
+            print('Testing PUT methods')
+            maker.make_put_requests_with_parameters(new_list)
 
-    endpoints_with_params = return_list_of_delete_methods_with_parameters(paths_dict)
-    if len(endpoints_with_params) > 0:
-        new_list = replace_parameters_with(endpoints_with_params, '13013013013013')
-        print('')
-        print('Testing DELETE methods')
-        maker.make_delete_requests_with_parameters(new_list)
+        endpoints_with_params = return_list_of_delete_methods_with_parameters(paths_dict)
+        if len(endpoints_with_params) > 0:
+            new_list = replace_parameters_with(endpoints_with_params, '13013013013013')
+            print('')
+            print('Testing DELETE methods')
+            maker.make_delete_requests_with_parameters(new_list)
+    # if not only_make_get_requests()
 
     print_test_results(maker, spec['info']['title'])
 
     # Exit with error code is needed by Azure to show test as failed
     if len(maker.failed_requests_list) > 0:
+        sys.exit(1)
+
+    if config.WARNING_FAIL and len(maker.warning_requests_list) > 0:
         sys.exit(1)
 # main()
 
@@ -104,6 +124,22 @@ def authorization_is_necessary():
     result = False
     for arg in sys.argv:
         if arg == AUTH_ARG:
+            result = True
+    return result
+
+
+def testing_eu_region():
+    result = False
+    for arg in sys.argv:
+        if arg == EU_REGION_ARG:
+            result = True
+    return result
+
+
+def only_make_get_requests():
+    result = False
+    for arg in sys.argv:
+        if arg == ONLY_GET_METHODS_ARG:
             result = True
     return result
 
@@ -192,16 +228,25 @@ def print_test_results(maker, api_title):
     timestamp = str(datetime.datetime.now()).replace(' ', 'T')
     header3 = '<system-out><![CDATA['
 
-    if len(maker.failed_requests_list) > 0:
+    if len(maker.failed_requests_list) > 0 or len(maker.warning_requests_list) > 0:
         header = '<testsuite errors="1" failures="0" skipped="0" tests="1" timestamp="' + timestamp + '">'
         header2 = '<testcase status="failed" name="' + api_title + '">'
         header21 = '<error message="Test failed"></error>'
         mp.append_result_str(header + header2 + header21 + header3)
-        mp.my_print('FAILED REQUESTS:')
-        for r in maker.failed_requests_list:
-            mp.my_print(r)
-        mp.my_print('')
-        mp.my_print('*** TEST FAIL ***')
+        if len(maker.warning_requests_list) > 0:
+            mp.my_print('')
+            mp.my_print('REQUESTS WHICH EXCEEDED WARNING TIMEOUT:')
+            for r in maker.warning_requests_list:
+                mp.my_print(r)
+            mp.my_print('')
+            if len(maker.failed_requests_list) == 0:
+                mp.my_print('*** Test result: Warning ***')
+        if len(maker.failed_requests_list) > 0:
+            mp.my_print('FAILED REQUESTS:')
+            for r in maker.failed_requests_list:
+                mp.my_print(r)
+            mp.my_print('')
+            mp.my_print('!!! TEST FAIL !!!')
     else:
         header = '<testsuite errors="0" failures="0" skipped="0" tests="1" timestamp="' + timestamp + '">'
         header2 = '<testcase status="passed" name="' + api_title + '">'

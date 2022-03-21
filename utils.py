@@ -4,19 +4,28 @@ import requests
 TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after a given number of seconds
 
 
-def get_resource(endpoint, timeout=TIMEOUT):
+def get_resource(endpoint, timeout=TIMEOUT, headers=None):
     tries = 0
     while tries < 2:
         try:
             tries += 1
-            resp = requests.get(endpoint, timeout=timeout)
+            if headers is None:
+                resp = requests.get(endpoint, timeout=timeout)
+            else:
+                resp = requests.get(endpoint, timeout=timeout, headers=headers)
             return resp
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
             if tries >= 2:
-                resp = requests.models.Response()
-                resp.status_code = 408
-                return resp
+                return create_408_response()
+
+    return create_408_response()
 # get_resource()
+
+
+def create_408_response():
+    resp = requests.models.Response()
+    resp.status_code = 408
+    return resp
 
 
 def get_resource_data(endpoint):
