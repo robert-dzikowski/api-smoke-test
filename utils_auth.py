@@ -6,7 +6,7 @@ from requests_oauthlib import OAuth2Session
 import api_smoke_test.config as config
 
 API_SCOPE = ['aggregations-api', 'assets-api', 'assets-forecast-api', 'assetreports-api',
-             'connectivity-api', 'consumer-mobile-api',
+             'connectivity-api', 'consumer-mobile-api', 'contactgroups-api',
              'devices-api', 'devicesbulkimport-api', 'devicesbulkprocessing-api',
              'gounify-api',
              'integrationsconfiguration-api',
@@ -21,7 +21,7 @@ def get_authorization_token(scope=None, local=False):
     Returns authorization token of API_USER.
     @param scope: scope of a token that will be fetched, default value is all APIs
     @param local: if True API runs on localhost and needs some parameters to be set
-    :return: dict
+    @return: token as dict
     """
     if scope is None:
         scope = API_SCOPE
