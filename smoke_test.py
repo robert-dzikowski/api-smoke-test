@@ -9,7 +9,7 @@ import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
 from my_print import MyPrint
 from my_exceptions import TestFail
-import api_smoke_test.config as config
+import config
 
 
 AUTH_ARG              = '--auth'
