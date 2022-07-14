@@ -19,7 +19,7 @@ def get_authorization_token(scope=None, local=False):
     else:
         password = config.API_USER_PASS
 
-    token = get_auth_token_of_user(config.API_USER, password, token_scope=scope, local=local)
+    token = get_auth_token_of_user(config.API_USER, password, local=local)
     return token
 
 

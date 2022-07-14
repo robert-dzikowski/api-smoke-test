@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(0, os.getcwd())
 import datetime
 import re
@@ -11,22 +12,15 @@ from my_print import MyPrint
 from my_exceptions import TestFail
 import config
 
-
-AUTH_ARG              = '--auth'
-LOCAL_ARG             = '--localhost'
-REQUEST_PARAM_ARG     = '--request-param='
-ONLY_GET_METHODS_ARG  = '--only-get'  # The smoke test will only test GET methods
-
-HEADERS_EU = {
-    'accept': '*/*',
-    'Content-Type': 'application/json',
-    'x-geo': 'eu'
-}
+AUTH_ARG = '--auth'
+LOCAL_ARG = '--localhost'
+REQUEST_PARAM_ARG = '--request-param='
+ONLY_GET_METHODS_ARG = '--only-get'  # The smoke test will only test GET methods
 
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file '
+        print('Usage: python api-smoke-test\smoke_test.py name_of_the_spec_file '
               '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG +
               '] [' + ONLY_GET_METHODS_ARG + '] ')
         sys.exit(1)
@@ -108,7 +102,7 @@ def main():
 
 def parse_spec_file(spec_file):
     # Load OpenAPI spec file and read yaml or json data
-    with open(spec_file) as f:
+    with open(file=spec_file, encoding='utf-8') as f:
         content = f.read()
         spec = yaml.safe_load(content)
     return spec
@@ -147,7 +141,8 @@ def get_auth_token():
     if localhost:
         token = ua.get_authorization_token(local=True)
     else:
-        token = ua.get_authorization_token()
+        token = ua.get_auth_token_secret()  # ua.get_authorization_token()
+        token = token['access_token']
     return token
 
 

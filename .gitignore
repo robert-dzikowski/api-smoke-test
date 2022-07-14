@@ -4,3 +4,4 @@
 *.xml
 secret.*
 open-api-files/*
+.idea/*
