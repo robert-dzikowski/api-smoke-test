@@ -1,7 +1,7 @@
 import datetime
 import os
 import requests
-from oauthlib.oauth2 import LegacyApplicationClient
+from oauthlib.oauth2 import LegacyApplicationClient, BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 import config
 
@@ -36,6 +36,25 @@ def get_auth_token_of_user(email, password, local=False):
         token = oauth.fetch_token(
             token_url=TOKEN_URL, username=email, password=password,
             client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)  
+    except Exception as e:
+        print('Fetching token caused exception, type: ' + str(type(e)))
+        print(str(e))
+        raise
+    return token
+
+
+def get_auth_token_secret():
+    """
+    Returns authorization token in case when only CLIENT_ID and CLIENT_SECRET are needed for authorization.
+    @return: token as dict
+    """
+    TOKEN_URL = config.token_staging
+    my_client = BackendApplicationClient(client_id=config.CLIENT_ID)
+    oauth = OAuth2Session(client=my_client)
+
+    try:
+        token = oauth.fetch_token(
+            token_url=TOKEN_URL, client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)  
     except Exception as e:
         print('Fetching token caused exception, type: ' + str(type(e)))
         print(str(e))
