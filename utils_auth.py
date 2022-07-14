@@ -6,10 +6,9 @@ from requests_oauthlib import OAuth2Session
 import config
 
 
-def get_authorization_token(scope=None, local=False):
+def get_authorization_token(local=False):
     """
     Returns authorization token of API_USER.
-    @param scope: scope of a token that will be fetched, default value is all APIs
     @param local: if True API runs on localhost and needs some parameters to be set
     @return: token as dict
     """
