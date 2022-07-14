@@ -3,7 +3,7 @@ import os
 import requests
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
-import api_smoke_test.config as config
+import config
 
 API_SCOPE = ['aggregations-api', 'assets-api', 'assets-forecast-api', 'assetreports-api',
              'connectivity-api', 'consumer-mobile-api', 'contactgroups-api',
@@ -13,7 +13,7 @@ API_SCOPE = ['aggregations-api', 'assets-api', 'assets-forecast-api', 'assetrepo
              'mobilemarketer-api',
              'permissions-api',  'profile',
              'tenantmanager-api', 'transformfileimporter-api',
-             'usermanagement-api']  # , 'openid']
+             'usermanagement-api'] 
 
 
 def get_authorization_token(scope=None, local=False):
