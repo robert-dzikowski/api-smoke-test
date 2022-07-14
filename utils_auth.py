@@ -5,16 +5,6 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 import config
 
-API_SCOPE = ['aggregations-api', 'assets-api', 'assets-forecast-api', 'assetreports-api',
-             'connectivity-api', 'consumer-mobile-api', 'contactgroups-api',
-             'devices-api', 'devicesbulkimport-api', 'devicesbulkprocessing-api',
-             'gounify-api',
-             'integrationsconfiguration-api',
-             'mobilemarketer-api',
-             'permissions-api',  'profile',
-             'tenantmanager-api', 'transformfileimporter-api',
-             'usermanagement-api'] 
-
 
 def get_authorization_token(scope=None, local=False):
     """
@@ -23,8 +13,6 @@ def get_authorization_token(scope=None, local=False):
     @param local: if True API runs on localhost and needs some parameters to be set
     @return: token as dict
     """
-    if scope is None:
-        scope = API_SCOPE
 
     if local:
         password = config.API_USER_LOCAL_PASS
@@ -35,10 +23,7 @@ def get_authorization_token(scope=None, local=False):
     return token
 
 
-def get_auth_token_of_user(email, password, token_scope=None, local=False):
-    if token_scope is None:
-        token_scope = API_SCOPE
-
+def get_auth_token_of_user(email, password, local=False):
     if local:
         set_env_for_local_oauthlib()
         TOKEN_URL = config.token_local
@@ -50,8 +35,7 @@ def get_auth_token_of_user(email, password, token_scope=None, local=False):
     try:
         token = oauth.fetch_token(
             token_url=TOKEN_URL, username=email, password=password,
-            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET,
-            scope=token_scope)  # ['permissions-api', 'tenantmanager-api'])
+            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)  
     except Exception as e:
         print('Fetching token caused exception, type: ' + str(type(e)))
         print(str(e))

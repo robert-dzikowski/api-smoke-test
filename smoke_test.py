@@ -16,7 +16,6 @@ AUTH_ARG              = '--auth'
 LOCAL_ARG             = '--localhost'
 REQUEST_PARAM_ARG     = '--request-param='
 ONLY_GET_METHODS_ARG  = '--only-get'  # The smoke test will only test GET methods
-EU_REGION_ARG         = '--region-eu'
 
 HEADERS_EU = {
     'accept': '*/*',
@@ -29,7 +28,7 @@ def main():
     if len(sys.argv) < 2:
         print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file '
               '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG +
-              '] [' + ONLY_GET_METHODS_ARG + '] [' + EU_REGION_ARG + ']')
+              '] [' + ONLY_GET_METHODS_ARG + '] ')
         sys.exit(1)
 
     spec_file = sys.argv[1]
@@ -56,12 +55,7 @@ def main():
     else:
         token = None
 
-    if testing_eu_region():
-        headers = HEADERS_EU
-    else:
-        headers = None
-
-    maker = HTTPRequestMaker(base_api_url, token, headers)
+    maker = HTTPRequestMaker(base_api_url, token)
 
     print('Testing GET methods')
     maker.make_get_requests(endpoints_list)
@@ -124,14 +118,6 @@ def authorization_is_necessary():
     result = False
     for arg in sys.argv:
         if arg == AUTH_ARG:
-            result = True
-    return result
-
-
-def testing_eu_region():
-    result = False
-    for arg in sys.argv:
-        if arg == EU_REGION_ARG:
             result = True
     return result
 
