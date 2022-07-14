@@ -1,5 +1,6 @@
 # Introduction 
-This repo contains smoke test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI). It was tested only with APIs that need authorization.
+This repo contains smoke test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI). 
+It was tested with Spotify API (https://github.com/sonallux/spotify-web-api).
   
 # Getting Started
 Install Python 3.9 or newer.

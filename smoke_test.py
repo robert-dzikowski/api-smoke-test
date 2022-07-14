@@ -142,7 +142,6 @@ def get_auth_token():
         token = ua.get_authorization_token(local=True)
     else:
         token = ua.get_auth_token_secret()  # ua.get_authorization_token()
-        token = token['access_token']
     return token
 
 
