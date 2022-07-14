@@ -21,3 +21,8 @@ If your API needs authorization fill config.py with appropriate values.
 
 --localhost API is runing on a local machine. 
 In my case local API uses HTTP instead of HTTPS, so you should adapt my code to your needs.
+
+# TODO
+Add ability to select authorization method: 
+- client id and secret (default, used by Spotify API)
+- client id, secret, user name and password
