@@ -44,8 +44,11 @@ def get_resource_content_string(endpoint):
     return content
 
 
-def create_resource(endpoint, headers, payload):
-    resp = requests.post(endpoint, headers=headers, json=payload)
+def create_resource(endpoint, headers=None, payload={}):
+    if headers is None:
+        resp = requests.post(endpoint, json=payload)
+    else:
+        resp = requests.post(endpoint, headers=headers, json=payload)
     return resp
 
 

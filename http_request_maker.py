@@ -1,7 +1,7 @@
 from enum import Enum
 import utils
 import utils_auth as ua
-import api_smoke_test.config as config
+import config
 
 HEADERS = {
     'accept': '*/*',

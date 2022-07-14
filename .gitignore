@@ -2,3 +2,6 @@
 *.js
 *.json
 *.xml
+secret.*
+open-api-files/*
+.idea/*

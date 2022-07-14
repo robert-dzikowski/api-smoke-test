@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(0, os.getcwd())
 import datetime
 import re
@@ -9,27 +10,19 @@ import utils_auth as ua
 from http_request_maker import HTTPRequestMaker
 from my_print import MyPrint
 from my_exceptions import TestFail
-import api_smoke_test.config as config
+import config
 
-
-AUTH_ARG              = '--auth'
-LOCAL_ARG             = '--localhost'
-REQUEST_PARAM_ARG     = '--request-param='
-ONLY_GET_METHODS_ARG  = '--only-get'  # The smoke test will only test GET methods
-EU_REGION_ARG         = '--region-eu'
-
-HEADERS_EU = {
-    'accept': '*/*',
-    'Content-Type': 'application/json',
-    'x-geo': 'eu'
-}
+AUTH_ARG = '--auth'
+LOCAL_ARG = '--localhost'
+REQUEST_PARAM_ARG = '--request-param='
+ONLY_GET_METHODS_ARG = '--only-get'  # The smoke test will only test GET methods
 
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: python api_smoke_test\smoke_test.py name_of_the_spec_file '
+        print('Usage: python api-smoke-test\smoke_test.py name_of_the_spec_file '
               '[' + AUTH_ARG + '] [' + LOCAL_ARG + '] [' + REQUEST_PARAM_ARG +
-              '] [' + ONLY_GET_METHODS_ARG + '] [' + EU_REGION_ARG + ']')
+              '] [' + ONLY_GET_METHODS_ARG + '] ')
         sys.exit(1)
 
     spec_file = sys.argv[1]
@@ -56,12 +49,7 @@ def main():
     else:
         token = None
 
-    if testing_eu_region():
-        headers = HEADERS_EU
-    else:
-        headers = None
-
-    maker = HTTPRequestMaker(base_api_url, token, headers)
+    maker = HTTPRequestMaker(base_api_url, token)
 
     print('Testing GET methods')
     maker.make_get_requests(endpoints_list)
@@ -114,7 +102,7 @@ def main():
 
 def parse_spec_file(spec_file):
     # Load OpenAPI spec file and read yaml or json data
-    with open(spec_file) as f:
+    with open(file=spec_file, encoding='utf-8') as f:
         content = f.read()
         spec = yaml.safe_load(content)
     return spec
@@ -124,14 +112,6 @@ def authorization_is_necessary():
     result = False
     for arg in sys.argv:
         if arg == AUTH_ARG:
-            result = True
-    return result
-
-
-def testing_eu_region():
-    result = False
-    for arg in sys.argv:
-        if arg == EU_REGION_ARG:
             result = True
     return result
 
@@ -161,7 +141,7 @@ def get_auth_token():
     if localhost:
         token = ua.get_authorization_token(local=True)
     else:
-        token = ua.get_authorization_token()
+        token = ua.get_auth_token_secret()  # ua.get_authorization_token()
     return token
 
 

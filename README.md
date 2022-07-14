@@ -1,8 +1,9 @@
 # Introduction 
-This repo contains smoke test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI). It was tested only with APIs that need authorization.
+This repo contains smoke test which tests all endpoints found in OpenAPI v.3 spec file (it wasn't tested with older versions of OpenAPI). 
+It was tested with Spotify API (https://github.com/sonallux/spotify-web-api).
   
 # Getting Started
-Install Python 3.9.
+Install Python 3.9 or newer.
 
 To install packages globally (for all users),
 run 'pip install -r requirements.txt' in project root directory.
@@ -20,3 +21,8 @@ If your API needs authorization fill config.py with appropriate values.
 
 --localhost API is runing on a local machine. 
 In my case local API uses HTTP instead of HTTPS, so you should adapt my code to your needs.
+
+# TODO
+Add ability to select authorization method: 
+- client id and secret (default, used by Spotify API)
+- client id, secret, user name and password
