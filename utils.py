@@ -26,18 +26,16 @@ def create_408_response(error_msg: str):
     return resp
 
 
-def get_resource_data(endpoint):
+def get_resource_data(endpoint: str) -> dict:
     resp = get_resource(endpoint)
-    check_response_status_code(resp.status_code, 200,
-                               "get_resource_data() returned status code " + str(resp.status_code))
-    data = json.loads(resp.content)
+    resp.raise_for_status()
+    data = resp.json()
     return data
 
 
 def get_resource_content_string(endpoint):
     resp = get_resource(endpoint)
-    check_response_status_code(resp.status_code, 200,
-                               "get_resource_content_string() returned Status Code " + str(resp.status_code))
+    resp.raise_for_status()
     content = bytes.decode(resp.content)
     return content
 
@@ -58,7 +56,3 @@ def put_resource(endpoint, headers, payload):
 def delete_resource(endpoint):
     resp = requests.delete(endpoint)
     return resp
-
-
-def check_response_status_code(status_code, expected_status_code, error_message):
-    assert status_code == expected_status_code, error_message
