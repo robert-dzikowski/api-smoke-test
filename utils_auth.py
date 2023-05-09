@@ -6,7 +6,7 @@ from requests_oauthlib import OAuth2Session
 import config
 
 
-def get_authorization_token(local=False):
+def get_authorization_token(local=False) -> dict:
     """
     Returns authorization token of API_USER.
     @param local: if True API runs on localhost and needs some parameters to be set
@@ -34,7 +34,7 @@ def get_auth_token_of_user(email, password, local=False):
     try:
         token = oauth.fetch_token(
             token_url=TOKEN_URL, username=email, password=password,
-            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)  
+            client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)
     except Exception as e:
         print('Fetching token caused exception, type: ' + str(type(e)))
         print(str(e))
@@ -42,9 +42,10 @@ def get_auth_token_of_user(email, password, local=False):
     return token
 
 
-def get_auth_token_secret():
+def get_auth_token_secret() -> dict:
     """
-    Returns authorization token in case when only CLIENT_ID and CLIENT_SECRET are needed for authorization.
+    Returns authorization token in case when only 
+    CLIENT_ID and CLIENT_SECRET are needed for authorization.
     @return: token as dict
     """
     TOKEN_URL = config.token_staging
@@ -53,7 +54,8 @@ def get_auth_token_secret():
 
     try:
         token = oauth.fetch_token(
-            token_url=TOKEN_URL, client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)  
+            token_url=TOKEN_URL, client_id=config.CLIENT_ID,
+            client_secret=config.CLIENT_SECRET)
     except Exception as e:
         print('Fetching token caused exception, type: ' + str(type(e)))
         print(str(e))
@@ -62,11 +64,13 @@ def get_auth_token_secret():
 
 
 def get_protected_resource(endpoint, token, headers=None):
-    resp = _get_protected_resource(endpoint, config.CLIENT_ID, token, headers=headers)
+    resp = _get_protected_resource(
+        endpoint, config.CLIENT_ID, token, headers=headers)
     return resp
 
 
-def _get_protected_resource(endpoint, client_id, token, get_timeout=config.TIMEOUT, headers=None):
+def _get_protected_resource(endpoint, client_id, token,
+                            get_timeout=config.TIMEOUT, headers=None):
     try:
         client = OAuth2Session(client_id, token=token)
         if headers is None:
@@ -82,11 +86,13 @@ def _get_protected_resource(endpoint, client_id, token, get_timeout=config.TIMEO
 def create_protected_resource(endpoint, token, payload=None):
     if payload is None:
         payload = {}
-    resp = _create_protected_resource(endpoint, config.CLIENT_ID, token, payload)
+    resp = _create_protected_resource(
+        endpoint, config.CLIENT_ID, token, payload)
     return resp
 
 
-def _create_protected_resource(endpoint, client_id, token, body, post_timeout=config.TIMEOUT_POST):
+def _create_protected_resource(endpoint, client_id, token, body,
+                               post_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
         resp = client.post(url=endpoint, json=body, timeout=post_timeout)
@@ -103,7 +109,8 @@ def put_protected_resource(endpoint, token, payload=None):
     return resp
 
 
-def _put_protected_resource(endpoint, client_id, token, body, put_timeout=config.TIMEOUT_POST):
+def _put_protected_resource(endpoint, client_id, token, body,
+                            put_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
         resp = client.put(url=endpoint, json=body, timeout=put_timeout)
@@ -118,7 +125,8 @@ def patch_protected_resource(endpoint, token):
     return resp
 
 
-def _patch_protected_resource(endpoint, client_id, token, patch_timeout=config.TIMEOUT_POST):
+def _patch_protected_resource(endpoint, client_id, token,
+                              patch_timeout=config.TIMEOUT_POST):
     try:
         client = OAuth2Session(client_id, token=token)
         resp = client.patch(url=endpoint, timeout=patch_timeout)
