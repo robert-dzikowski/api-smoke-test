@@ -1,16 +1,16 @@
+import config
+from my_exceptions import TestFail
+from my_print import MyPrint
+from http_request_maker import HTTPRequestMaker
+import utils_auth as ua
+import utils
+import yaml
+import re
+import datetime
 import os
 import sys
 
 sys.path.insert(0, os.getcwd())
-import datetime
-import re
-import yaml
-import utils
-import utils_auth as ua
-from http_request_maker import HTTPRequestMaker
-from my_print import MyPrint
-from my_exceptions import TestFail
-import config
 
 AUTH_ARG = '--auth'
 LOCAL_ARG = '--localhost'
@@ -39,15 +39,16 @@ def main():
     print('')
 
     endpoints_list = return_list_of_parameterless_get_methods(paths_dict)
-    endpoints_with_params = return_list_of_get_methods_with_parameters(paths_dict)
+    endpoints_with_params = return_list_of_get_methods_with_parameters(
+        paths_dict)
 
-    if len(endpoints_list) == 0 and len(endpoints_with_params) == 0:
-        raise TestFail('Spec file ' + spec_file + ' does not contain any GET methods.')
+    if there_are_no_get_endpoints(endpoints_list, endpoints_with_params):
+        raise TestFail('Spec file ' + spec_file +
+                       ' does not contain any GET methods.')
 
+    token = None
     if authorization_is_necessary():
         token = get_auth_token()
-    else:
-        token = None
 
     maker = HTTPRequestMaker(base_api_url, token)
 
@@ -57,7 +58,8 @@ def main():
     req_param = get_request_param_arg()
 
     if len(endpoints_with_params) > 0:
-        call_get_methods_with_parameters(endpoints_with_params, maker, req_param)
+        call_get_methods_with_parameters(
+            endpoints_with_params, maker, req_param)
 
     if not only_make_get_requests():
         endpoints_list = return_list_of_parameterless_post_methods(paths_dict)
@@ -66,21 +68,27 @@ def main():
             print('Testing POST methods')
             maker.make_post_requests(endpoints_list)
 
-        endpoints_with_params = return_list_of_post_methods_with_parameters(paths_dict)
+        endpoints_with_params = return_list_of_post_methods_with_parameters(
+            paths_dict)
         if len(endpoints_with_params) > 0:
-            new_list = replace_parameters_with(endpoints_with_params, req_param)
+            new_list = replace_parameters_with(
+                endpoints_with_params, req_param)
             maker.make_post_requests_with_parameters(new_list)
 
-        endpoints_with_params = return_list_of_put_methods_with_parameters(paths_dict)
+        endpoints_with_params = return_list_of_put_methods_with_parameters(
+            paths_dict)
         if len(endpoints_with_params) > 0:
-            new_list = replace_parameters_with(endpoints_with_params, req_param)
+            new_list = replace_parameters_with(
+                endpoints_with_params, req_param)
             print('')
             print('Testing PUT methods')
             maker.make_put_requests_with_parameters(new_list)
 
-        endpoints_with_params = return_list_of_delete_methods_with_parameters(paths_dict)
+        endpoints_with_params = return_list_of_delete_methods_with_parameters(
+            paths_dict)
         if len(endpoints_with_params) > 0:
-            new_list = replace_parameters_with(endpoints_with_params, '13013013013013')
+            new_list = replace_parameters_with(
+                endpoints_with_params, '13013013013013')
             print('')
             print('Testing DELETE methods')
             maker.make_delete_requests_with_parameters(new_list)
@@ -98,6 +106,10 @@ def main():
 
 
 ######################################## Support functions ########################################
+
+
+def there_are_no_get_endpoints(endpoints_list, endpoints_with_params):
+    return len(endpoints_list) == 0 and len(endpoints_with_params) == 0
 
 
 def parse_spec_file(spec_file):
@@ -199,6 +211,10 @@ def call_get_methods_with_parameters(endpoints_with_params, maker, param):
     maker.make_get_requests_with_parameters(new_list)
 
 
+def there_were_failed_or_warning_requests(maker):
+    return len(maker.failed_requests_list) > 0 or len(maker.warning_requests_list) > 0
+
+
 def print_test_results(maker, api_title):
     mp = MyPrint()
     print('')
@@ -208,7 +224,7 @@ def print_test_results(maker, api_title):
     timestamp = str(datetime.datetime.now()).replace(' ', 'T')
     header3 = '<system-out><![CDATA['
 
-    if len(maker.failed_requests_list) > 0 or len(maker.warning_requests_list) > 0:
+    if there_were_failed_or_warning_requests(maker):
         header = '<testsuite errors="1" failures="0" skipped="0" tests="1" timestamp="' + timestamp + '">'
         header2 = '<testcase status="failed" name="' + api_title + '">'
         header21 = '<error message="Test failed"></error>'
