@@ -1,30 +1,28 @@
 import json
 import requests
 
-TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after a given number of seconds
+TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after given number of seconds
 
 
-def get_resource(endpoint, timeout=TIMEOUT, headers=None):
+def get_resource(endpoint, timeout=TIMEOUT, headers=None, params=None):
     tries = 0
-    while tries < 2:
+    while True:
+        tries += 1
         try:
-            tries += 1
-            if headers is None:
-                resp = requests.get(endpoint, timeout=timeout)
-            else:
-                resp = requests.get(endpoint, timeout=timeout, headers=headers)
+            resp = requests.get(endpoint, timeout=timeout,
+                                headers=headers, params=params)
             return resp
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-            if tries >= 2:
-                return create_408_response()
-
-    return create_408_response()
+        except (requests.exceptions.Timeout) as e:
+            if tries >= 3:
+                return create_408_response(
+                    'requests library raised ' + type(e).__name__ + ' exception.')
 # get_resource()
 
 
-def create_408_response():
+def create_408_response(error_msg: str):
     resp = requests.models.Response()
     resp.status_code = 408
+    resp.reason = error_msg
     return resp
 
 
