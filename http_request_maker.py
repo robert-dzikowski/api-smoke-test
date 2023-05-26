@@ -17,14 +17,12 @@ class HttpMethods(Enum):
 
 
 class HTTPRequestMaker:
-    def __init__(self, api_url, token=None, headers=None):
-        if headers is None:
-            headers = HEADERS
+    def __init__(self, api_url, token=None, headrs=None):
         self._api_url = api_url
         self._auth_token = token
+        self.headers = HEADERS if (headrs is None) else headrs
         self.failed_requests_list = []
         self.warning_requests_list = []
-        self.headers = headers
 
     def make_get_requests(self, request_list):
         self._make_requests(request_list, [200, 204, 400], HttpMethods.GET)
