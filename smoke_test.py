@@ -92,7 +92,7 @@ def main():
             print('')
             print('Testing DELETE methods')
             maker.make_delete_requests_with_parameters(new_list)
-    # if not only_make_get_requests()
+    # End if not only_make_get_requests()
 
     print_test_results(maker, spec['info']['title'])
 
