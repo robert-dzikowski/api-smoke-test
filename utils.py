@@ -1,4 +1,3 @@
-import json
 import requests
 
 TIMEOUT = 10.0  # Tells requests library to stop waiting for a response after given number of seconds

@@ -25,31 +25,35 @@ class HTTPRequestMaker:
         self.warning_requests_list = []
 
     def make_get_requests(self, request_list):
-        self._make_requests(request_list, [200, 204, 400], HttpMethods.GET)
+        self._make_requests(request_list, config.GET_SC, HttpMethods.GET)
 
     def make_get_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [
-                            200, 204, 400, 404], HttpMethods.GET)
-
-    def make_get_requests_with_param_for_bugs(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [
-                            200, 204, 404], HttpMethods.GET)
+        self._make_requests(
+            requests_with_parameters_list,
+            config.GET_SC_PARAMS,
+            HttpMethods.GET)
 
     def make_post_requests(self, request_list):
         self._make_requests(
-            request_list, [200, 201, 202, 204, 400, 404], HttpMethods.POST)
+            request_list, config.POST_SC, HttpMethods.POST)
 
     def make_post_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [
-                            200, 201, 202, 204, 400, 404, 409], HttpMethods.POST)
+        self._make_requests(
+            requests_with_parameters_list,
+            config.POST_SC_PARAMS,
+            HttpMethods.POST)
 
     def make_put_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list, [
-                            200, 204, 400, 404], HttpMethods.PUT)
+        self._make_requests(
+            requests_with_parameters_list,
+            config.PUT_SC_PARAMS,
+            HttpMethods.PUT)
 
     def make_delete_requests_with_parameters(self, requests_with_parameters_list):
-        self._make_requests(requests_with_parameters_list,
-                            [400, 404], HttpMethods.DELETE)
+        self._make_requests(
+            requests_with_parameters_list,
+            config.DELETE_SC_PARAMS,
+            HttpMethods.DELETE)
 
     def _make_requests(self, request_list, correct_statuses, http_method):
         for end_point in request_list:
